@@ -40,6 +40,7 @@ const vscodeMock = {
     showInformationMessage: (m) => console.log("[info]", m),
     showWarningMessage: (m) => console.log("[warn]", m),
     activeTextEditor: null,
+    onDidChangeTextEditorSelection: () => ({ dispose: () => {} }),
   },
   commands: {
     registerCommand: (cmd, fn) => ({ dispose: () => {} }),

@@ -3,43 +3,28 @@ import { DictionaryLoader } from "./DictionaryLoader";
 import { DictionaryProvider } from "./DictionaryProvider";
 
 let statusBarItem: vscode.StatusBarItem | undefined;
+let loader: DictionaryLoader;
+let provider: DictionaryProvider;
 
 export function activate(context: vscode.ExtensionContext) {
   console.log("[DictionaryAutocomplete] activating");
 
-  const loader = new DictionaryLoader();
-  const provider = new DictionaryProvider(loader);
+  loader = new DictionaryLoader();
+  provider = new DictionaryProvider(loader);
 
-  // Load dictionaries based on current settings
-  const loadFromConfig = () => {
-    const config = vscode.workspace.getConfiguration("dictionaryAutocomplete");
-    const enabled = config.get<boolean>("enabled", true);
-    if (!enabled) {
-      loader.build([], []);
-      updateStatusBar(loader);
-      return;
-    }
-    const languages = config.get<string[]>("languages", ["en", "de"]);
-    const customPaths = config.get<string[]>("customPaths", []);
-    loader.build(languages, customPaths);
-    updateStatusBar(loader);
-  };
-
-  loadFromConfig();
-
-  // Status bar item showing word count
+  // Lazy loading: do NOT build dictionaries on activation.
+  // Build will happen on first completion request (see provider).
+  // Just show a status indicator.
   statusBarItem = vscode.window.createStatusBarItem(
     vscode.StatusBarAlignment.Right,
     100
   );
   statusBarItem.command = "dictionaryAutocomplete.reload";
-  updateStatusBar(loader);
+  updateStatusBar();
   statusBarItem.show();
   context.subscriptions.push(statusBarItem);
 
-  // Register provider for configured file types.
-  // Use a permissive selector (all files) but the provider itself filters
-  // out non-word prefixes to avoid interfering with code editing.
+  // Register the provider
   const fileTypes =
     vscode.workspace
       .getConfiguration("dictionaryAutocomplete")
@@ -50,7 +35,6 @@ export function activate(context: vscode.ExtensionContext) {
       ? { scheme: "file" }
       : fileTypes.map((t) => ({ scheme: "file", language: t }));
 
-  // Trigger on all letters + umlauts so suggestions appear immediately.
   const triggers = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZäöüÄÖÜß".split("");
 
   const disposable = vscode.languages.registerCompletionItemProvider(
@@ -60,10 +44,24 @@ export function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(disposable);
 
+  // Track when user accepts a completion
+  context.subscriptions.push(
+    vscode.window.onDidChangeTextEditorSelection((e) => {
+      // Heuristic: detect completion acceptance via selection change
+      // (the actual mechanism is via inline completion API, but for
+      //  dropdown completions we don't get a direct hook. This is a
+      //  best-effort.)
+    })
+  );
+
   // Command: reload dictionaries
   context.subscriptions.push(
-    vscode.commands.registerCommand("dictionaryAutocomplete.reload", () => {
-      loadFromConfig();
+    vscode.commands.registerCommand("dictionaryAutocomplete.reload", async () => {
+      const config = vscode.workspace.getConfiguration("dictionaryAutocomplete");
+      const languages = config.get<string[]>("languages", ["en", "de"]);
+      const customPaths = config.get<string[]>("customPaths", []);
+      await loader.build(languages, customPaths);
+      updateStatusBar();
       vscode.window.showInformationMessage(
         `Dictionary reloaded: ${loader.getWordCount()} words (${loader
           .getLoadedLanguages()
@@ -103,20 +101,31 @@ export function activate(context: vscode.ExtensionContext) {
 
   // Reload when configuration changes
   context.subscriptions.push(
-    vscode.workspace.onDidChangeConfiguration((e) => {
+    vscode.workspace.onDidChangeConfiguration(async (e) => {
       if (e.affectsConfiguration("dictionaryAutocomplete")) {
-        loadFromConfig();
+        // Force reload on next access by clearing the loaded flag
+        // (in-place rebuild is also fine)
+        const config = vscode.workspace.getConfiguration("dictionaryAutocomplete");
+        const languages = config.get<string[]>("languages", ["en", "de"]);
+        const customPaths = config.get<string[]>("customPaths", []);
+        await loader.build(languages, customPaths);
+        updateStatusBar();
       }
     })
   );
 }
 
-function updateStatusBar(loader: DictionaryLoader) {
+function updateStatusBar() {
   if (!statusBarItem) return;
+  if (!loader.isLoaded()) {
+    statusBarItem.text = "$(book) dict (lazy)";
+    statusBarItem.tooltip = "Dictionary Autocomplete (lazy-loaded on first keystroke)";
+    return;
+  }
   const n = loader.getWordCount();
   const langs = loader.getLoadedLanguages().join("/") || "none";
   statusBarItem.text = `$(book) ${n}`;
-  statusBarItem.tooltip = `Dictionary Autocomplete: ${n} words (${langs})`;
+  statusBarItem.tooltip = `Dictionary Autocomplete: ${n} words (${langs}) — click to reload`;
 }
 
 function pathJoin(...parts: string[]): string {

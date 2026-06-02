@@ -22,7 +22,7 @@ const ctx = { subscriptions: [], extensionPath: path.join(__dirname, "..") };
 activate(ctx);
 const actMs = Date.now() - t0;
 
-console.log(`Activation: ${actMs}ms (with both EN+DE defaults, 243k words total)`);
+console.log(`Activation: ${actMs}ms (with both EN+DE defaults)`);
 console.log(`Subscriptions: ${ctx.subscriptions.length}`);
 
 const provider = global.__PROVIDER__;

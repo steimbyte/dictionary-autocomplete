@@ -1,18 +1,10 @@
 {
   "name": "dictionary-autocomplete",
   "displayName": "Dictionary Autocomplete",
-  "description": "Inline word suggestions from English/German dictionaries in any text file",
-  "version": "0.1.0",
+  "description": "Inline word completions from English/German dictionaries with frequency ranking, fuzzy matching, phrase completion, and n-gram predictions",
+  "version": "0.3.0",
   "publisher": "steimbyte",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/steimbyte/dictionary-autocomplete.git"
-  },
-  "bugs": {
-    "url": "https://github.com/steimbyte/dictionary-autocomplete/issues"
-  },
-  "homepage": "https://github.com/steimbyte/dictionary-autocomplete",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -23,6 +15,14 @@
   "activationEvents": [
     "onStartupFinished"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/steimbyte/dictionary-autocomplete.git"
+  },
+  "bugs": {
+    "url": "https://github.com/steimbyte/dictionary-autocomplete/issues"
+  },
+  "homepage": "https://github.com/steimbyte/dictionary-autocomplete",
   "contributes": {
     "configuration": {
       "title": "Dictionary Autocomplete",
@@ -65,7 +65,27 @@
           "default": [
             "*"
           ],
-          "description": "File types where suggestions appear (e.g. markdown, plaintext, or * for all)"
+          "description": "File types where suggestions appear"
+        },
+        "dictionaryAutocomplete.fuzzyEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable fuzzy matching for typos (e.g. 'Schmetterlin' → 'Schmetterling')"
+        },
+        "dictionaryAutocomplete.phrasesEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable phrase completions (e.g. 'Auf W' → 'Auf Wiedersehen')"
+        },
+        "dictionaryAutocomplete.ngramsEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable n-gram next-word predictions"
+        },
+        "dictionaryAutocomplete.userLearning": {
+          "type": "boolean",
+          "default": true,
+          "description": "Track typed words to boost their frequency in rankings"
         }
       }
     },

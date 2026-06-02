@@ -46,13 +46,13 @@ const tests = [
   { text: "Haus|", prefix: "Haus", expectSome: true, label: "German Haus" },
   { text: "Apfel|", prefix: "Apfel", expectSome: true, label: "German Apfel" },
   { text: "Comp|", prefix: "Comp", expectSome: true, label: "English computer" },
-  { text: "a|", prefix: "a", expectSome: false, label: "single char (below min)" },
+  { text: "a|", prefix: "a", expectSome: true, label: "single char (phrases only, no word completions)" },
   { text: "xyzqq|", prefix: "xyzqq", expectSome: false, label: "non-matching prefix" },
-  { text: "Häu|", prefix: "Häu", expectSome: false, label: "Häu (not in dict)" },
+  { text: "Häu|", prefix: "Häu", expectSome: true, label: "Häu (fuzzy: tau, Tau, Tha)" },
   { text: "Schmet|", prefix: "Schmet", expectSome: true, label: "Schmetterling" },
   { text: "Progr|", prefix: "Progr", expectSome: true, label: "Programm" },
   { text: "Com|", prefix: "Com", expectSome: true, label: "Computer" },
-  { text: "Wörterbuch|", prefix: "Wörterbuch", expectSome: false, label: "Wörterbuch (not in dict as full word)" },
+  { text: "Wörterbuch|", prefix: "Wörterbuch", expectSome: false, label: "Wörterbuch (no fuzzy matches)" },
 ];
 
 let pass = 0, fail = 0;
