@@ -1,0 +1,97 @@
+{
+  "name": "dictionary-autocomplete",
+  "displayName": "Dictionary Autocomplete",
+  "description": "Inline word suggestions from English/German dictionaries in any text file",
+  "version": "0.1.0",
+  "publisher": "steimbyte",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/steimbyte/dictionary-autocomplete.git"
+  },
+  "bugs": {
+    "url": "https://github.com/steimbyte/dictionary-autocomplete/issues"
+  },
+  "homepage": "https://github.com/steimbyte/dictionary-autocomplete",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./out/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "configuration": {
+      "title": "Dictionary Autocomplete",
+      "type": "object",
+      "properties": {
+        "dictionaryAutocomplete.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable dictionary autocomplete"
+        },
+        "dictionaryAutocomplete.languages": {
+          "type": "array",
+          "default": [
+            "en",
+            "de"
+          ],
+          "description": "Which dictionary languages to use (en, de, or both)"
+        },
+        "dictionaryAutocomplete.customPaths": {
+          "type": "array",
+          "default": [],
+          "description": "Additional JSON dictionary files to load (overrides defaults when set)"
+        },
+        "dictionaryAutocomplete.minPrefixLength": {
+          "type": "number",
+          "default": 2,
+          "minimum": 1,
+          "maximum": 10,
+          "description": "Minimum characters before suggestions appear"
+        },
+        "dictionaryAutocomplete.maxSuggestions": {
+          "type": "number",
+          "default": 20,
+          "minimum": 5,
+          "maximum": 100,
+          "description": "Maximum number of suggestions in dropdown"
+        },
+        "dictionaryAutocomplete.fileTypes": {
+          "type": "array",
+          "default": [
+            "*"
+          ],
+          "description": "File types where suggestions appear (e.g. markdown, plaintext, or * for all)"
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "dictionaryAutocomplete.reload",
+        "title": "Dictionary: Reload dictionaries"
+      },
+      {
+        "command": "dictionaryAutocomplete.addWord",
+        "title": "Dictionary: Add current word"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "build": "npm run build-dicts && npm run compile",
+    "build-dicts": "node scripts/build-dicts.js",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.0",
+    "@vscode/vsce": "^3.0.0"
+  }
+}

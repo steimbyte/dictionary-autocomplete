@@ -1,0 +1,8 @@
+node_modules/
+out/
+test-results/
+.vscode-test/
+*.vsix
+src/dictionaries/
+.DS_Store
+Thumbs.db
